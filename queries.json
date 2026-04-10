@@ -1,0 +1,20 @@
+{
+  "queries": [
+    {
+      "name": "restar_saldo",
+      "sql": "UPDATE usuarios SET saldo = saldo - :monto WHERE id = :id"
+    },
+    {
+      "name": "sumar_saldo",
+      "sql": "UPDATE usuarios SET saldo = saldo + :monto WHERE id = :id"
+    },
+    {
+      "name": "obtener_usuario",
+      "sql": "SELECT * FROM usuarios WHERE nombre = :user"
+    },
+    {
+      "name": "registrar_partida",
+      "sql": "INSERT INTO historial_partidas (id_jugador, resultado, puntaje, fecha) VALUES (:id, :res, :pts, CURRENT_TIMESTAMP)"
+    }
+  ]
+}
