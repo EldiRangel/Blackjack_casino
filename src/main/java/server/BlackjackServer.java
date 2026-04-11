@@ -8,10 +8,10 @@ public class BlackjackServer {
     public static void main(String[] args) {
         DbComponent<PostgresAdapter> db = null;
         try {
-           
-            db = new DbComponent<>(PostgresAdapter.class, "jdbc:postgresql://localhost:5432/blackjack", "postgres", "password", "queries.json");
+            
+            db = new DbComponent<>(PostgresAdapter.class, "jdbc:postgresql://localhost:5432/blackjack_db", "postgres", "123456789", "queries.json");
         } catch (Exception e) { System.err.println("Sin DB"); }
-
+        
         try (ServerSocket server = new ServerSocket(5000)) {
             while (true) {
                 new Thread(new BlackjackSession(server.accept(), db)).start();
