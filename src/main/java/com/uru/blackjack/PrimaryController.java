@@ -1,42 +1,79 @@
 package com.uru.blackjack;
 
-import client.BlackjackClient;
+import client.BlackjackClient; 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
 
 public class PrimaryController {
-    @FXML private HBox hbPlayerCards;
-    @FXML private Label lblPlayerScore, lblStatus;
-    @FXML private Button btnHit, btnStand;
-    
-    private BlackjackClient client;
+
+    @FXML private Label labelPuntaje; // Muestra "Cartas: X"
+    @FXML private Label labelEstado;
+    @FXML private Label labelOponente;
+    @FXML private Button btnPedir;
+    @FXML private Button btnPlantarse;
+    @FXML private Button btnNuevaPartida;
+
+    private BlackjackClient client; 
 
     @FXML
     public void initialize() {
-        client = new BlackjackClient(this);
+        client = new BlackjackClient(this); 
         client.connect();
+        
+        btnPedir.setDisable(true);
+        btnPlantarse.setDisable(true);
+        labelEstado.setText("");
     }
 
-    @FXML private void startGame() {
-        client.sendCommand("START");
-        btnHit.setDisable(false);
-        btnStand.setDisable(false);
-    }
-
-    @FXML private void handleHit() { client.sendCommand("HIT"); }
-    @FXML private void handleStand() { client.sendCommand("STAND"); }
-
-    public void updateUI(String score) {
-        Platform.runLater(() -> lblPlayerScore.setText("Puntaje: " + score));
-    }
-
-    public void showResult(String msg) {
+    // Actualiza tus cartas
+    public void updateUI(String cardCount) {
         Platform.runLater(() -> {
-            lblStatus.setText(msg);
-            btnHit.setDisable(true);
-            btnStand.setDisable(true);
+            labelPuntaje.setText("Cartas: " + cardCount);
+            labelEstado.setText("TU TURNO");
         });
+    }
+
+    // Actualiza cartas del oponente
+    public void updateOpponent(String count) {
+        Platform.runLater(() -> {
+            labelOponente.setText("Oponente: " + count + " cartas");
+        });
+    }
+
+    public void showResult(String result) {
+        Platform.runLater(() -> {
+            labelEstado.setText(result.toUpperCase());
+            btnPedir.setDisable(true);
+            btnPlantarse.setDisable(true);
+            btnNuevaPartida.setDisable(false);
+        });
+    }
+
+    public void procesarRespuesta(String response) {
+        if (response.startsWith("OPPONENT|")) {
+            updateOpponent(response.split("\\|")[1]);
+        }
+        // Agrega aquí otros comandos si el servidor los manda
+    }
+
+    @FXML
+    private void iniciarPartida() {
+        client.sendCommand("START");
+        labelPuntaje.setText("Cartas: 0");
+        labelEstado.setText("ESPERANDO...");
+        btnPedir.setDisable(false);
+        btnPlantarse.setDisable(false);
+        btnNuevaPartida.setDisable(true);
+    }
+
+    @FXML
+    private void pedirCarta() {
+        client.sendCommand("HIT");
+    }
+
+    @FXML
+    private void plantarse() {
+        client.sendCommand("STAND");
     }
 }

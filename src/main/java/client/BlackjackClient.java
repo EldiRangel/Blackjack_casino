@@ -1,30 +1,47 @@
-package client;
+package client; 
 
-import com.uru.blackjack.PrimaryController;
+import com.uru.blackjack.PrimaryController; // Importamos el controlador para que lo reconozca
+import javafx.application.Platform;
 import java.io.*;
 import java.net.Socket;
 
 public class BlackjackClient {
-    private PrimaryController controller;
+    private Socket socket;
     private PrintWriter out;
+    private BufferedReader in;
+    private PrimaryController controller;
 
-    public BlackjackClient(PrimaryController c) { this.controller = c; }
+    public BlackjackClient(PrimaryController controller) {
+        this.controller = controller;
+    }
 
     public void connect() {
         new Thread(() -> {
             try {
-                Socket s = new Socket("localhost", 5000);
-                out = new PrintWriter(s.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-                String msg;
-                while ((msg = in.readLine()) != null) {
-                    String[] p = msg.split("\\|");
-                    if (p[0].equals("SCORE")) controller.updateUI(p[1]);
-                    if (p[0].equals("RESULT")) controller.showResult(p[1]);
+                socket = new Socket("localhost", 5000);
+                out = new PrintWriter(socket.getOutputStream(), true);
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+                String line;
+                while ((line = in.readLine()) != null) {
+                    final String response = line;
+                    Platform.runLater(() -> {
+                        if (response.startsWith("SCORE|")) {
+                            controller.updateUI(response.split("\\|")[1]);
+                        } else if (response.startsWith("RESULT|")) {
+                            controller.showResult(response.split("\\|")[1]);
+                        } else if (response.startsWith("CHAT|")) {
+                            controller.procesarRespuesta(response);
+                        }
+                    });
                 }
-            } catch (Exception e) { }
+            } catch (IOException e) {
+                Platform.runLater(() -> controller.showResult("Error: Sin conexión"));
+            }
         }).start();
     }
 
-    public void sendCommand(String cmd) { if (out != null) out.println(cmd); }
+    public void sendCommand(String cmd) {
+        if (out != null) out.println(cmd);
+    }
 }
