@@ -1,6 +1,6 @@
 package client; 
 
-import com.uru.blackjack.PrimaryController; // Importamos el controlador para que lo reconozca
+import com.uru.blackjack.PrimaryController;
 import javafx.application.Platform;
 import java.io.*;
 import java.net.Socket;
@@ -25,12 +25,15 @@ public class BlackjackClient {
                 String line;
                 while ((line = in.readLine()) != null) {
                     final String response = line;
+
                     Platform.runLater(() -> {
                         if (response.startsWith("SCORE|")) {
                             controller.updateUI(response.split("\\|")[1]);
                         } else if (response.startsWith("RESULT|")) {
                             controller.showResult(response.split("\\|")[1]);
-                        } else if (response.startsWith("CHAT|")) {
+                        } else if (response.startsWith("OPPONENT|")) {
+                            controller.updateOpponent(response.split("\\|")[1]);
+                        } else {
                             controller.procesarRespuesta(response);
                         }
                     });
